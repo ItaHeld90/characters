@@ -1,26 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
+import { getRandomDrawing, drawingToText } from './drawing-utils';
+
+const charSet = ['+', '=', 'X', 'Y', 'o', 'O', 'H', '^', '.', '*', '8', '|'];
+const numRows = 10;
+const wingLen = 4;
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [drawing] = useState(
+        getRandomDrawing(charSet, numRows, wingLen, { pSpace: 0.65 })
+    );
+    const str = drawingToText(drawing, wingLen);
+
+    return (
+        <div style={{ height: '100vh', fontSize: 20 }} className="App">
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                }}
+            >
+                <pre>{str}</pre>
+            </div>
+        </div>
+    );
 }
 
 export default App;
