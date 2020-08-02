@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { times } from 'lodash';
-import { getRandomDrawing, drawingToText } from './drawing-utils';
+import {
+    getRandomDrawing,
+    drawingToText,
+    mutateDrawing,
+} from './drawing-utils';
 import './App.css';
 
-const charSet = ['+', '=', 'X', 'Y', 'o', 'O', 'H', '^', '.', '*', '8', '|'];
+// const charSet = ['+', '=', 'X', 'Y', 'o', 'O', 'H', '^', '.', '*', '8', '|', '0', 'U'];
+// const charSet = ['\\', '(', ')', '/', '*', '0', 'o', 'O'];
+const charSet = ['\\', '(', ')', '/', 'O', 'o', '8', '.'];
 const numRows = 10;
 const wingLen = 4;
 
@@ -12,11 +18,19 @@ const numTileRows = 2;
 const numCols = Math.floor(numDrawings / numTileRows);
 
 function App() {
-    const [drawings] = useState(
+    const [drawings, setDrawings] = useState(
         times(numDrawings, () =>
-            getRandomDrawing(charSet, numRows, wingLen, { pSpace: 0.65 })
+            getRandomDrawing(charSet, numRows, wingLen, { pSpace: 0.8 })
         )
     );
+
+    function handlePick(drawingIdx: number) {
+        const picked = drawings[drawingIdx];
+        const newDrawings = times(numDrawings, () =>
+            mutateDrawing(picked, charSet)
+        );
+        setDrawings(newDrawings);
+    }
 
     const strings = drawings.map((drawing) => drawingToText(drawing, wingLen));
 
@@ -25,8 +39,6 @@ function App() {
             <div
                 style={{
                     display: 'flex',
-                    // alignItems: 'center',
-                    // justifyContent: 'center',
                     flexDirection: 'column',
                     height: '100%',
                 }}
@@ -47,8 +59,11 @@ function App() {
                                     style={{
                                         padding: '20px 100px',
                                         background: 'lightgrey',
-                                        cursor: 'pointer'
+                                        cursor: 'pointer',
                                     }}
+                                    onClick={() =>
+                                        handlePick(colIdx + rowIdx * numCols)
+                                    }
                                 >
                                     <pre>
                                         {strings[colIdx + rowIdx * numCols]}

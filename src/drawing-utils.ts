@@ -30,8 +30,53 @@ export function drawingToText(drawing: string[], wingLen: number): string {
         .map((row) => {
             const middle = last(row);
             const leftWing = initial(row);
-            const rightWing = [...leftWing].reverse();
+            const rightWing = leftWing.map(mirrorChar).reverse();
             return [...leftWing, middle, ...rightWing].join('');
         })
         .join('\n');
+}
+
+export function mutateDrawing(drawing: string[], charSet: string[]): string[] {
+    return drawing.map((char) => mutateChar(char, charSet));
+}
+
+export function mutateChar(char: string, charSet: string[]): string {
+    if (Math.random() > 0.2) return char;
+
+    return char === ' '
+        ? mutateWhiteSpace(char, charSet)
+        : Math.random() < 0.3
+        ? ' '
+        : (sample(charSet) as string);
+}
+
+export function mutateWhiteSpace(char: string, charSet: string[]): string {
+    return Math.random() < 0.3 ? (sample(charSet) as string) : char;
+}
+
+function mirrorChar(char: string): string {
+    switch (char) {
+        case '/':
+            return '\\';
+        case '\\':
+            return '/';
+        case '[':
+            return ']';
+        case ']':
+            return '[';
+        case '<':
+            return '>';
+        case '>':
+            return '<';
+        case '{':
+            return '}';
+        case '}':
+            return '{';
+        case '(':
+            return ')';
+        case ')':
+            return '(';
+        default:
+            return char;
+    }
 }
