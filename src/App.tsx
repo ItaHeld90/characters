@@ -7,35 +7,56 @@ import {
 } from './drawing-utils';
 import './App.css';
 
-// const charSet = ['+', '=', 'X', 'Y', 'o', 'O', 'H', '^', '.', '*', '8', '|', '0', 'U'];
-// const charSet = ['\\', '(', ')', '/', '*', '0', 'o', 'O'];
-const charSet = ['\\', '(', ')', '/', 'O', 'o', '8', '.'];
+const fontSize = 16;
+
+const charSet = [
+    '+',
+    '=',
+    'X',
+    'Y',
+    'o',
+    'O',
+    '^',
+    '.',
+    '*',
+    '|',
+    'U',
+    '/',
+    '\\',
+];
 const numRows = 10;
 const wingLen = 4;
 
-const numDrawings = 6;
-const numTileRows = 2;
+const numDrawings = 9;
+const numTileRows = 3;
 const numCols = Math.floor(numDrawings / numTileRows);
 
 function App() {
     const [drawings, setDrawings] = useState(
         times(numDrawings, () =>
-            getRandomDrawing(charSet, numRows, wingLen, { pSpace: 0.8 })
+            getRandomDrawing(charSet, numRows, wingLen, { pSpace: 0.75 })
         )
     );
 
     function handlePick(drawingIdx: number) {
         const picked = drawings[drawingIdx];
-        const newDrawings = times(numDrawings, () =>
+        const newDrawings = times(numDrawings - 1, () =>
             mutateDrawing(picked, charSet)
         );
-        setDrawings(newDrawings);
+
+        const updatedDrawings = [
+            ...newDrawings.slice(0, drawingIdx),
+            picked,
+            ...newDrawings.slice(drawingIdx),
+        ];
+
+        setDrawings(updatedDrawings);
     }
 
     const strings = drawings.map((drawing) => drawingToText(drawing, wingLen));
 
     return (
-        <div style={{ height: '100vh', fontSize: 20 }} className="App">
+        <div style={{ height: '100vh', fontSize }} className="App">
             <div
                 style={{
                     display: 'flex',

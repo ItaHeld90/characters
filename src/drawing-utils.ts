@@ -41,7 +41,7 @@ export function mutateDrawing(drawing: string[], charSet: string[]): string[] {
 }
 
 export function mutateChar(char: string, charSet: string[]): string {
-    if (Math.random() > 0.2) return char;
+    if (Math.random() > 0.15) return char;
 
     return char === ' '
         ? mutateWhiteSpace(char, charSet)
