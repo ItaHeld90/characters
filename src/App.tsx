@@ -11,7 +11,7 @@ import { recordDrawings, recordPick, initTimeline } from './timeline-store';
 
 const fontSize = 20;
 
-const charSet = ['^', '/', '\\', '^', '*', 'o', 'O', '{', '}', '_', '-', '='];
+const charSet = ['^', '/', '\\', '|', '^', '*', 'o', 'O', '{', '}', '_', '-', '='];
 const numRows = 12;
 const wingLen = 4;
 const pSpace = 0.75;
