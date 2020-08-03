@@ -4,8 +4,10 @@ import {
     getRandomDrawing,
     drawingToText,
     mutateDrawing,
+    createNewDrawing,
 } from './drawing-utils';
 import './App.css';
+import { recordDrawings, recordPick, initTimeline } from './timeline-store';
 
 const fontSize = 20;
 
@@ -18,19 +20,23 @@ const numDrawings = 6;
 const numTileRows = 2;
 const numCols = Math.floor(numDrawings / numTileRows);
 
-function App() {
-    const [drawings, setDrawings] = useState(getInitDrawings());
+// init
+const initialDrawings = getInitDrawings();
+initTimeline(initialDrawings);
 
-    function getInitDrawings() {
-        return times(numDrawings, () =>
-            getRandomDrawing(charSet, numRows, wingLen, { pSpace })
-        );
-    }
+function getInitDrawings() {
+    return times(numDrawings, () =>
+        getRandomDrawing(charSet, numRows, wingLen, { pSpace })
+    );
+}
+
+function App() {
+    const [drawings, setDrawings] = useState(initialDrawings);
 
     function handlePick(drawingIdx: number) {
         const picked = drawings[drawingIdx];
         const newDrawings = times(numDrawings - 1, () =>
-            mutateDrawing(picked, charSet)
+            createNewDrawing(mutateDrawing(picked.data, charSet))
         );
 
         const updatedDrawings = [
@@ -39,10 +45,19 @@ function App() {
             ...newDrawings.slice(drawingIdx),
         ];
 
+        recordPick(picked);
+        recordDrawings(drawings);
+
         setDrawings(updatedDrawings);
     }
 
-    const strings = drawings.map((drawing) => drawingToText(drawing, wingLen));
+    function handleRefresh() {
+        const drawings = getInitDrawings();
+        initTimeline(drawings);
+        setDrawings(drawings);
+    }
+
+    const texts = drawings.map((drawing) => drawingToText(drawing, wingLen));
 
     return (
         <div style={{ height: '100vh', fontSize }} className="App">
@@ -54,7 +69,7 @@ function App() {
                 }}
             >
                 <div>
-                    <button onClick={() => setDrawings(getInitDrawings())}>
+                    <button onClick={handleRefresh}>
                         Refresh
                     </button>
                 </div>
@@ -81,7 +96,7 @@ function App() {
                                     }
                                 >
                                     <pre>
-                                        {strings[colIdx + rowIdx * numCols]}
+                                        {texts[colIdx + rowIdx * numCols]}
                                     </pre>
                                 </div>
                             </div>
