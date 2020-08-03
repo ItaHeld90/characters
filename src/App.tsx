@@ -7,36 +7,25 @@ import {
 } from './drawing-utils';
 import './App.css';
 
-const fontSize = 16;
+const fontSize = 20;
 
-const charSet = [
-    '+',
-    '=',
-    'X',
-    'Y',
-    'o',
-    'O',
-    '^',
-    '.',
-    '*',
-    '|',
-    'U',
-    '/',
-    '\\',
-];
-const numRows = 10;
+const charSet = ['^', '/', '\\', '^', '*', 'o', 'O', '{', '}', '_', '-', '='];
+const numRows = 12;
 const wingLen = 4;
+const pSpace = 0.75;
 
-const numDrawings = 9;
-const numTileRows = 3;
+const numDrawings = 6;
+const numTileRows = 2;
 const numCols = Math.floor(numDrawings / numTileRows);
 
 function App() {
-    const [drawings, setDrawings] = useState(
-        times(numDrawings, () =>
-            getRandomDrawing(charSet, numRows, wingLen, { pSpace: 0.75 })
-        )
-    );
+    const [drawings, setDrawings] = useState(getInitDrawings());
+
+    function getInitDrawings() {
+        return times(numDrawings, () =>
+            getRandomDrawing(charSet, numRows, wingLen, { pSpace })
+        );
+    }
 
     function handlePick(drawingIdx: number) {
         const picked = drawings[drawingIdx];
@@ -64,6 +53,11 @@ function App() {
                     height: '100%',
                 }}
             >
+                <div>
+                    <button onClick={() => setDrawings(getInitDrawings())}>
+                        Refresh
+                    </button>
+                </div>
                 {times(numTileRows, (rowIdx) => (
                     <div key={rowIdx} style={{ display: 'flex', flex: 1 }}>
                         {times(numCols, (colIdx) => (
