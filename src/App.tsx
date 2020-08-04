@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { times } from 'lodash';
 import {
     getRandomDrawing,
@@ -7,11 +7,31 @@ import {
     createNewDrawing,
 } from './drawing-utils';
 import './App.css';
-import { recordDrawings, recordPick, initTimeline } from './timeline-store';
+import {
+    recordDrawings,
+    recordPick,
+    initTimeline,
+    backInTime,
+    forwardInTime,
+} from './timeline-store';
 
 const fontSize = 20;
 
-const charSet = ['^', '/', '\\', '|', '^', '*', 'o', 'O', '{', '}', '_', '-', '='];
+const charSet = [
+    '^',
+    '/',
+    '\\',
+    '|',
+    '^',
+    '*',
+    'o',
+    'O',
+    '{',
+    '}',
+    '_',
+    '-',
+    '=',
+];
 const numRows = 12;
 const wingLen = 4;
 const pSpace = 0.75;
@@ -33,6 +53,14 @@ function getInitDrawings() {
 function App() {
     const [drawings, setDrawings] = useState(initialDrawings);
 
+    useEffect(() => {
+        document.body.addEventListener('keypress', handleKeyPress);
+
+        return () => {
+            document.body.removeEventListener('keypress', handleKeyPress);
+        };
+    }, []);
+
     function handlePick(drawingIdx: number) {
         const picked = drawings[drawingIdx];
         const newDrawings = times(numDrawings - 1, () =>
@@ -46,7 +74,7 @@ function App() {
         ];
 
         recordPick(picked);
-        recordDrawings(drawings);
+        recordDrawings(updatedDrawings);
 
         setDrawings(updatedDrawings);
     }
@@ -55,6 +83,34 @@ function App() {
         const drawings = getInitDrawings();
         initTimeline(drawings);
         setDrawings(drawings);
+    }
+
+    function handleKeyPress(e: KeyboardEvent) {
+        if (e.key === 'ArrowLeft') {
+            const newDrawings = backInTime();
+            if (newDrawings) {
+                setDrawings(newDrawings);
+            }
+        } else if (e.key === 'ArrowRight') {
+            const newDrawings = forwardInTime();
+            if (newDrawings) {
+                setDrawings(newDrawings);
+            }
+        }
+    }
+
+    function handleBack() {
+        const newDrawings = backInTime();
+        if (newDrawings) {
+            setDrawings(newDrawings);
+        }
+    }
+
+    function handleForward() {
+        const newDrawings = forwardInTime();
+        if (newDrawings) {
+            setDrawings(newDrawings);
+        }
     }
 
     const texts = drawings.map((drawing) => drawingToText(drawing, wingLen));
@@ -69,9 +125,9 @@ function App() {
                 }}
             >
                 <div>
-                    <button onClick={handleRefresh}>
-                        Refresh
-                    </button>
+                    <button onClick={handleBack}>Back</button>
+                    <button onClick={handleRefresh}>Refresh</button>
+                    <button onClick={handleForward}>Forward</button>
                 </div>
                 {times(numTileRows, (rowIdx) => (
                     <div key={rowIdx} style={{ display: 'flex', flex: 1 }}>

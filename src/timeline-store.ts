@@ -1,4 +1,5 @@
 import { v4 as newUUID } from 'uuid';
+import { keyBy } from 'lodash';
 
 export type DrawingData = string[];
 
@@ -21,7 +22,7 @@ interface Timeline {
     lastNode: TimelineNode;
 }
 
-let recordedDrawings: Drawing[] = [];
+let recordedDrawings: { [drawingId: string]: Drawing } = {};
 let timeline: Timeline | null = null;
 let currTimelineNode: TimelineNode | null = null;
 
@@ -38,6 +39,7 @@ function createTimelineNode(
 }
 
 export function initTimeline(drawings: Drawing[]) {
+    recordedDrawings = keyBy(drawings, (drawing) => drawing.id);
     const firstTimelineNode = createTimelineNode(drawings, currTimelineNode);
     currTimelineNode = firstTimelineNode;
 
@@ -49,7 +51,10 @@ export function initTimeline(drawings: Drawing[]) {
 }
 
 export function recordDrawings(drawings: Drawing[]) {
-    recordedDrawings.push(...drawings);
+    recordedDrawings = {
+        ...recordedDrawings,
+        ...keyBy(drawings, (drawing) => drawing.id),
+    };
 
     const newTimelineNode = createTimelineNode(drawings, currTimelineNode);
 
@@ -73,5 +78,29 @@ export function recordPick(pickedDrawing: Drawing) {
 export function clearTimeline() {
     timeline = null;
     currTimelineNode = null;
-    recordedDrawings = [];
+    recordedDrawings = {};
+}
+
+export function backInTime(): Drawing[] | null {
+    const targetTimelineNode = currTimelineNode?.prevNode ?? null;
+
+    if (!targetTimelineNode) return null;
+
+    currTimelineNode = targetTimelineNode;
+
+    return currTimelineNode.drawings.map(
+        (drawingId) => recordedDrawings[drawingId]
+    );
+}
+
+export function forwardInTime(): Drawing[] | null {
+    const [targetTimelineNode] = currTimelineNode?.nextNodes ?? [];
+
+    if (!targetTimelineNode) return null;
+
+    currTimelineNode = targetTimelineNode;
+
+    return currTimelineNode.drawings.map(
+        (drawingId) => recordedDrawings[drawingId]
+    );
 }
