@@ -1,5 +1,6 @@
 import { v4 as newUUID } from 'uuid';
 import { keyBy } from 'lodash';
+import { useState } from 'react';
 
 export type DrawingData = string[];
 
@@ -16,91 +17,120 @@ interface TimelineNode {
     picked?: string;
 }
 
-interface Timeline {
+interface TimelineTree {
     id: string;
     firstNode: TimelineNode;
     lastNode: TimelineNode;
 }
 
-let recordedDrawings: { [drawingId: string]: Drawing } = {};
-let timeline: Timeline | null = null;
-let currTimelineNode: TimelineNode | null = null;
+interface Timeline {
+    timelineTree: TimelineTree;
+    currTimelineNode: TimelineNode;
+    recordedDrawings: { [drawingId: string]: Drawing };
+}
+
+export function useTimeline(drawings: Drawing[]) {
+    const [timeline, setTimeline] = useState(createTimeline(drawings));
+
+    const { timelineTree, currTimelineNode, recordedDrawings } = timeline;
+
+    function handlePick(pickedDrawing: Drawing, newDrawings: Drawing[]) {
+        if (currTimelineNode) {
+            currTimelineNode.picked = pickedDrawing.id;
+        }
+
+        const newTimelineNode = createTimelineNode(
+            newDrawings,
+            currTimelineNode
+        );
+
+        const newTimelineTree: TimelineTree =
+            currTimelineNode === timelineTree?.lastNode
+                ? {
+                      ...timelineTree,
+                      lastNode: newTimelineNode,
+                  }
+                : timelineTree;
+
+        setTimeline({
+            timelineTree: newTimelineTree,
+            currTimelineNode: newTimelineNode,
+            recordedDrawings: {
+                ...recordedDrawings,
+                ...keyBy(newDrawings, (drawing) => drawing.id),
+            },
+        });
+    }
+
+    function reset(drawings: Drawing[]) {
+        setTimeline(createTimeline(drawings));
+    }
+
+    function backInTime() {
+        const targetTimelineNode = currTimelineNode?.prevNode ?? null;
+
+        if (targetTimelineNode) {
+            setTimeline({
+                ...timeline,
+                currTimelineNode: targetTimelineNode,
+            });
+        }
+    }
+
+    function forwardInTime() {
+        const [targetTimelineNode] = currTimelineNode?.nextNodes ?? [];
+
+        if (targetTimelineNode) {
+            setTimeline({
+                ...timeline,
+                currTimelineNode: targetTimelineNode,
+            });
+        }
+    }
+
+    function getCurrDrawings(): Drawing[] {
+        return currTimelineNode.drawings.map(
+            (drawingId) => recordedDrawings[drawingId]
+        );
+    }
+
+    return {
+        getCurrDrawings,
+        handlePick,
+        backInTime,
+        forwardInTime,
+        reset,
+    };
+}
+
+function createTimeline(drawings: Drawing[]): Timeline {
+    const recordedDrawings = keyBy(drawings, (drawing) => drawing.id);
+    const currTimelineNode = createTimelineNode(drawings, null);
+    const timelineTree = {
+        id: newUUID(),
+        firstNode: currTimelineNode,
+        lastNode: currTimelineNode,
+    };
+
+    return {
+        timelineTree,
+        currTimelineNode,
+        recordedDrawings,
+    };
+}
 
 function createTimelineNode(
     drawings: Drawing[],
     prevNode: TimelineNode | null
 ): TimelineNode {
-    return {
+    const newNode: TimelineNode = {
         id: newUUID(),
         drawings: drawings.map((drawing) => drawing.id),
         prevNode,
         nextNodes: [],
     };
-}
 
-export function initTimeline(drawings: Drawing[]) {
-    recordedDrawings = keyBy(drawings, (drawing) => drawing.id);
-    const firstTimelineNode = createTimelineNode(drawings, currTimelineNode);
-    currTimelineNode = firstTimelineNode;
+    newNode.prevNode?.nextNodes.push(newNode);
 
-    timeline = {
-        id: newUUID(),
-        firstNode: firstTimelineNode,
-        lastNode: firstTimelineNode,
-    };
-}
-
-export function recordDrawings(drawings: Drawing[]) {
-    recordedDrawings = {
-        ...recordedDrawings,
-        ...keyBy(drawings, (drawing) => drawing.id),
-    };
-
-    const newTimelineNode = createTimelineNode(drawings, currTimelineNode);
-
-    if (currTimelineNode === timeline?.lastNode) {
-        timeline.lastNode = newTimelineNode;
-    }
-
-    if (currTimelineNode) {
-        currTimelineNode.nextNodes.push(newTimelineNode);
-    }
-
-    currTimelineNode = newTimelineNode;
-}
-
-export function recordPick(pickedDrawing: Drawing) {
-    if (currTimelineNode) {
-        currTimelineNode.picked = pickedDrawing.id;
-    }
-}
-
-export function clearTimeline() {
-    timeline = null;
-    currTimelineNode = null;
-    recordedDrawings = {};
-}
-
-export function backInTime(): Drawing[] | null {
-    const targetTimelineNode = currTimelineNode?.prevNode ?? null;
-
-    if (!targetTimelineNode) return null;
-
-    currTimelineNode = targetTimelineNode;
-
-    return currTimelineNode.drawings.map(
-        (drawingId) => recordedDrawings[drawingId]
-    );
-}
-
-export function forwardInTime(): Drawing[] | null {
-    const [targetTimelineNode] = currTimelineNode?.nextNodes ?? [];
-
-    if (!targetTimelineNode) return null;
-
-    currTimelineNode = targetTimelineNode;
-
-    return currTimelineNode.drawings.map(
-        (drawingId) => recordedDrawings[drawingId]
-    );
+    return newNode;
 }

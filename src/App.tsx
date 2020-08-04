@@ -1,19 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { times } from 'lodash';
 import {
     getRandomDrawing,
     drawingToText,
-    mutateDrawing,
     createNewDrawing,
+    mutateDrawing,
 } from './drawing-utils';
 import './App.css';
-import {
-    recordDrawings,
-    recordPick,
-    initTimeline,
-    backInTime,
-    forwardInTime,
-} from './timeline-store';
+import { useTimeline } from './timeline-store';
 
 const fontSize = 20;
 
@@ -41,27 +35,32 @@ const numTileRows = 2;
 const numCols = Math.floor(numDrawings / numTileRows);
 
 // init
-const initialDrawings = getInitDrawings();
-initTimeline(initialDrawings);
+const initialDrawings = getNewDrawings();
 
-function getInitDrawings() {
+function getNewDrawings() {
     return times(numDrawings, () =>
         getRandomDrawing(charSet, numRows, wingLen, { pSpace })
     );
 }
 
 function App() {
-    const [drawings, setDrawings] = useState(initialDrawings);
+    const {
+        getCurrDrawings,
+        handlePick,
+        backInTime,
+        forwardInTime,
+        reset,
+    } = useTimeline(initialDrawings);
 
-    useEffect(() => {
-        document.body.addEventListener('keypress', handleKeyPress);
+    const drawings = getCurrDrawings();
+    const texts = drawings.map((drawing) => drawingToText(drawing, wingLen));
 
-        return () => {
-            document.body.removeEventListener('keypress', handleKeyPress);
-        };
-    }, []);
+    function handleReset() {
+        const newDrawings = getNewDrawings();
+        reset(newDrawings);
+    }
 
-    function handlePick(drawingIdx: number) {
+    function handleClickOnDrawing(drawingIdx: number) {
         const picked = drawings[drawingIdx];
         const newDrawings = times(numDrawings - 1, () =>
             createNewDrawing(mutateDrawing(picked.data, charSet))
@@ -73,47 +72,8 @@ function App() {
             ...newDrawings.slice(drawingIdx),
         ];
 
-        recordPick(picked);
-        recordDrawings(updatedDrawings);
-
-        setDrawings(updatedDrawings);
+        handlePick(picked, updatedDrawings);
     }
-
-    function handleRefresh() {
-        const drawings = getInitDrawings();
-        initTimeline(drawings);
-        setDrawings(drawings);
-    }
-
-    function handleKeyPress(e: KeyboardEvent) {
-        if (e.key === 'ArrowLeft') {
-            const newDrawings = backInTime();
-            if (newDrawings) {
-                setDrawings(newDrawings);
-            }
-        } else if (e.key === 'ArrowRight') {
-            const newDrawings = forwardInTime();
-            if (newDrawings) {
-                setDrawings(newDrawings);
-            }
-        }
-    }
-
-    function handleBack() {
-        const newDrawings = backInTime();
-        if (newDrawings) {
-            setDrawings(newDrawings);
-        }
-    }
-
-    function handleForward() {
-        const newDrawings = forwardInTime();
-        if (newDrawings) {
-            setDrawings(newDrawings);
-        }
-    }
-
-    const texts = drawings.map((drawing) => drawingToText(drawing, wingLen));
 
     return (
         <div style={{ height: '100vh', fontSize }} className="App">
@@ -125,9 +85,9 @@ function App() {
                 }}
             >
                 <div>
-                    <button onClick={handleBack}>Back</button>
-                    <button onClick={handleRefresh}>Refresh</button>
-                    <button onClick={handleForward}>Forward</button>
+                    <button onClick={backInTime}>Back</button>
+                    <button onClick={handleReset}>Refresh</button>
+                    <button onClick={forwardInTime}>Forward</button>
                 </div>
                 {times(numTileRows, (rowIdx) => (
                     <div key={rowIdx} style={{ display: 'flex', flex: 1 }}>
@@ -148,7 +108,9 @@ function App() {
                                         cursor: 'pointer',
                                     }}
                                     onClick={() =>
-                                        handlePick(colIdx + rowIdx * numCols)
+                                        handleClickOnDrawing(
+                                            colIdx + rowIdx * numCols
+                                        )
                                     }
                                 >
                                     <pre>
