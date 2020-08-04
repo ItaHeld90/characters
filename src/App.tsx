@@ -45,15 +45,13 @@ function getNewDrawings() {
 
 function App() {
     const {
-        getCurrDrawings,
+        currDrawings: drawings,
+        currPicked,
         handlePick,
         backInTime,
         forwardInTime,
         reset,
     } = useTimeline(initialDrawings);
-
-    const drawings = getCurrDrawings();
-    const texts = drawings.map((drawing) => drawingToText(drawing, wingLen));
 
     function handleReset() {
         const newDrawings = getNewDrawings();
@@ -74,6 +72,12 @@ function App() {
 
         handlePick(picked, updatedDrawings);
     }
+
+    function coordinatesToDrawingIdx(rowIdx: number, colIdx: number) {
+        return colIdx + rowIdx * numCols;
+    }
+
+    const texts = drawings.map((drawing) => drawingToText(drawing, wingLen));
 
     return (
         <div style={{ height: '100vh', fontSize }} className="App">
@@ -104,17 +108,35 @@ function App() {
                                 <div
                                     style={{
                                         padding: '20px 100px',
-                                        background: 'lightgrey',
+                                        background:
+                                            drawings[
+                                                coordinatesToDrawingIdx(
+                                                    rowIdx,
+                                                    colIdx
+                                                )
+                                            ] === currPicked
+                                                ? 'lightgreen'
+                                                : 'lightgrey',
                                         cursor: 'pointer',
                                     }}
                                     onClick={() =>
                                         handleClickOnDrawing(
-                                            colIdx + rowIdx * numCols
+                                            coordinatesToDrawingIdx(
+                                                rowIdx,
+                                                colIdx
+                                            )
                                         )
                                     }
                                 >
                                     <pre>
-                                        {texts[colIdx + rowIdx * numCols]}
+                                        {
+                                            texts[
+                                                coordinatesToDrawingIdx(
+                                                    rowIdx,
+                                                    colIdx
+                                                )
+                                            ]
+                                        }
                                     </pre>
                                 </div>
                             </div>

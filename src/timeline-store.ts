@@ -88,14 +88,17 @@ export function useTimeline(drawings: Drawing[]) {
         }
     }
 
-    function getCurrDrawings(): Drawing[] {
-        return currTimelineNode.drawings.map(
-            (drawingId) => recordedDrawings[drawingId]
-        );
-    }
+    const currDrawings = currTimelineNode.drawings.map(
+        (drawingId) => recordedDrawings[drawingId]
+    );
+
+    const currPicked = currTimelineNode.picked
+        ? recordedDrawings[currTimelineNode.picked]
+        : null;
 
     return {
-        getCurrDrawings,
+        currDrawings,
+        currPicked,
         handlePick,
         backInTime,
         forwardInTime,
