@@ -34,18 +34,33 @@ export function useTimeline(drawings: Drawing[]) {
 
     const { timelineTree, currTimelineNode, recordedDrawings } = timeline;
 
+    function isInPast(): boolean {
+        return currTimelineNode.nextNodes.length > 0;
+    }
+
+    function getTimelineNodeDrawings(timelineNode: TimelineNode): Drawing[] {
+        return timelineNode.drawings.map(
+            (drawingId) => recordedDrawings[drawingId]
+        );
+    }
+
     function handlePick(pickedDrawing: Drawing, newDrawings: Drawing[]) {
-        if (currTimelineNode) {
-            currTimelineNode.picked = pickedDrawing.id;
-        }
+        const updatedCurrTimelineNode = isInPast()
+            ? createTimelineNode(
+                  getTimelineNodeDrawings(currTimelineNode),
+                  currTimelineNode.prevNode
+              )
+            : currTimelineNode;
+
+        updatedCurrTimelineNode.picked = pickedDrawing.id;
 
         const newTimelineNode = createTimelineNode(
             newDrawings,
-            currTimelineNode
+            updatedCurrTimelineNode
         );
 
         const newTimelineTree: TimelineTree =
-            currTimelineNode === timelineTree?.lastNode
+            updatedCurrTimelineNode === timelineTree?.lastNode
                 ? {
                       ...timelineTree,
                       lastNode: newTimelineNode,

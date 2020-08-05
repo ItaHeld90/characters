@@ -25,8 +25,10 @@ const charSet = [
     '_',
     '-',
     '=',
+    '<',
+    '>'
 ];
-const numRows = 12;
+const numRows = 10;
 const wingLen = 4;
 const pSpace = 0.75;
 
