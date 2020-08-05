@@ -8,6 +8,7 @@ import {
 } from './drawing-utils';
 import './App.css';
 import { useTimeline } from './timeline-store';
+import { Drawing } from './drawing';
 
 const fontSize = 20;
 
@@ -26,7 +27,7 @@ const charSet = [
     '-',
     '=',
     '<',
-    '>'
+    '>',
 ];
 const numRows = 10;
 const wingLen = 4;
@@ -96,56 +97,34 @@ function App() {
                     <button onClick={handleReset}>Refresh</button>
                     <button onClick={backInTime}>Back</button>
                     <button onClick={forwardInTime}>Forward</button>
-                    <button onClick={nextForkInTime}>next fork</button>
                     <button onClick={prevForkInTime}>prev fork</button>
+                    <button onClick={nextForkInTime}>next fork</button>
                 </div>
                 {times(numTileRows, (rowIdx) => (
                     <div key={rowIdx} style={{ display: 'flex', flex: 1 }}>
                         {times(numCols, (colIdx) => (
-                            <div
-                                key={colIdx} // TODO: use id
-                                style={{
-                                    display: 'flex',
-                                    flex: 1,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        padding: '20px 100px',
-                                        background:
-                                            drawings[
-                                                coordinatesToDrawingIdx(
-                                                    rowIdx,
-                                                    colIdx
-                                                )
-                                            ] === currPicked
-                                                ? 'lightgreen'
-                                                : 'lightgrey',
-                                        cursor: 'pointer',
-                                    }}
-                                    onClick={() =>
-                                        handleClickOnDrawing(
-                                            coordinatesToDrawingIdx(
-                                                rowIdx,
-                                                colIdx
-                                            )
-                                        )
-                                    }
-                                >
-                                    <pre>
-                                        {
-                                            texts[
-                                                coordinatesToDrawingIdx(
-                                                    rowIdx,
-                                                    colIdx
-                                                )
-                                            ]
-                                        }
-                                    </pre>
-                                </div>
-                            </div>
+                            <Drawing
+                                key={
+                                    drawings[
+                                        coordinatesToDrawingIdx(rowIdx, colIdx)
+                                    ].id
+                                }
+                                drawingText={
+                                    texts[
+                                        coordinatesToDrawingIdx(rowIdx, colIdx)
+                                    ]
+                                }
+                                isPicked={
+                                    drawings[
+                                        coordinatesToDrawingIdx(rowIdx, colIdx)
+                                    ] === currPicked
+                                }
+                                onPick={() =>
+                                    handleClickOnDrawing(
+                                        coordinatesToDrawingIdx(rowIdx, colIdx)
+                                    )
+                                }
+                            />
                         ))}
                     </div>
                 ))}
