@@ -1,0 +1,7 @@
+.drawing-container .drawing-actions-bar {
+    display: none;
+}
+
+.drawing-container:hover .drawing-actions-bar {
+    display: initial;
+}
