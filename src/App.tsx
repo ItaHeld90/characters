@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { times } from 'lodash';
+import html2canvas from 'html2canvas';
 import {
     getRandomDrawing,
     drawingToText,
@@ -57,6 +58,7 @@ function App() {
         prevForkInTime,
         reset,
     } = useTimeline(initialDrawings);
+    const drawingsContainerRef = useRef<HTMLDivElement>(null);
 
     function handleReset() {
         const newDrawings = getNewDrawings();
@@ -76,6 +78,25 @@ function App() {
         ];
 
         handlePick(picked, updatedDrawings);
+    }
+
+    async function handleDownloadImage() {
+        const drawingsContainer = drawingsContainerRef.current;
+
+        if (!drawingsContainer) return;
+
+        const fileName = prompt('Please enter the file name:', 'characters');
+
+        if (!fileName) return;
+
+        const canvasEl = await html2canvas(drawingsContainer);
+
+        const dataUrl = canvasEl.toDataURL('jpg');
+        const link = document.createElement('a');
+        link.download = `${fileName}.jpg`;
+        link.href = dataUrl;
+
+        link.click();
     }
 
     function coordinatesToDrawingIdx(rowIdx: number, colIdx: number) {
@@ -99,35 +120,59 @@ function App() {
                     <button onClick={forwardInTime}>Forward</button>
                     <button onClick={prevForkInTime}>prev fork</button>
                     <button onClick={nextForkInTime}>next fork</button>
+                    <button onClick={handleDownloadImage}>
+                        Download as image
+                    </button>
                 </div>
-                {times(numTileRows, (rowIdx) => (
-                    <div key={rowIdx} style={{ display: 'flex', flex: 1 }}>
-                        {times(numCols, (colIdx) => (
-                            <Drawing
-                                key={
-                                    drawings[
-                                        coordinatesToDrawingIdx(rowIdx, colIdx)
-                                    ].id
-                                }
-                                drawingText={
-                                    texts[
-                                        coordinatesToDrawingIdx(rowIdx, colIdx)
-                                    ]
-                                }
-                                isPicked={
-                                    drawings[
-                                        coordinatesToDrawingIdx(rowIdx, colIdx)
-                                    ] === currPicked
-                                }
-                                onPick={() =>
-                                    handleClickOnDrawing(
-                                        coordinatesToDrawingIdx(rowIdx, colIdx)
-                                    )
-                                }
-                            />
-                        ))}
-                    </div>
-                ))}
+                <div
+                    ref={drawingsContainerRef}
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}
+                >
+                    {times(numTileRows, (rowIdx) => (
+                        <div key={rowIdx} style={{ display: 'flex', flex: 1 }}>
+                            {times(numCols, (colIdx) => (
+                                <Drawing
+                                    key={
+                                        drawings[
+                                            coordinatesToDrawingIdx(
+                                                rowIdx,
+                                                colIdx
+                                            )
+                                        ].id
+                                    }
+                                    drawingText={
+                                        texts[
+                                            coordinatesToDrawingIdx(
+                                                rowIdx,
+                                                colIdx
+                                            )
+                                        ]
+                                    }
+                                    isPicked={
+                                        drawings[
+                                            coordinatesToDrawingIdx(
+                                                rowIdx,
+                                                colIdx
+                                            )
+                                        ] === currPicked
+                                    }
+                                    onPick={() =>
+                                        handleClickOnDrawing(
+                                            coordinatesToDrawingIdx(
+                                                rowIdx,
+                                                colIdx
+                                            )
+                                        )
+                                    }
+                                />
+                            ))}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
