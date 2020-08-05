@@ -52,6 +52,8 @@ function App() {
         handlePick,
         backInTime,
         forwardInTime,
+        nextForkInTime,
+        prevForkInTime,
         reset,
     } = useTimeline(initialDrawings);
 
@@ -91,9 +93,11 @@ function App() {
                 }}
             >
                 <div>
-                    <button onClick={backInTime}>Back</button>
                     <button onClick={handleReset}>Refresh</button>
+                    <button onClick={backInTime}>Back</button>
                     <button onClick={forwardInTime}>Forward</button>
+                    <button onClick={nextForkInTime}>next fork</button>
+                    <button onClick={prevForkInTime}>prev fork</button>
                 </div>
                 {times(numTileRows, (rowIdx) => (
                     <div key={rowIdx} style={{ display: 'flex', flex: 1 }}>

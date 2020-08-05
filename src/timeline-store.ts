@@ -1,6 +1,7 @@
 import { v4 as newUUID } from 'uuid';
 import { keyBy } from 'lodash';
 import { useState } from 'react';
+import { modulo } from './helper-utils';
 
 export type DrawingData = string[];
 
@@ -103,6 +104,34 @@ export function useTimeline(drawings: Drawing[]) {
         }
     }
 
+    function nextForkInTime() {
+        navigateToForkInTime(1);
+    }
+
+    function prevForkInTime() {
+        navigateToForkInTime(-1);
+    }
+
+    function navigateToForkInTime(step: number) {
+        const prev = currTimelineNode.prevNode;
+
+        if (!prev) return;
+
+        const numForks = prev.nextNodes.length;
+
+        if (numForks <= 1) return;
+
+        const currForkIdx = prev.nextNodes.findIndex(
+            (node) => node === currTimelineNode
+        );
+        const nextForkIdx = modulo(currForkIdx + step, numForks);
+
+        setTimeline({
+            ...timeline,
+            currTimelineNode: prev.nextNodes[nextForkIdx],
+        });
+    }
+
     const currDrawings = currTimelineNode.drawings.map(
         (drawingId) => recordedDrawings[drawingId]
     );
@@ -117,6 +146,8 @@ export function useTimeline(drawings: Drawing[]) {
         handlePick,
         backInTime,
         forwardInTime,
+        nextForkInTime,
+        prevForkInTime,
         reset,
     };
 }
