@@ -13,23 +13,7 @@ import { Drawing } from './drawing';
 
 const fontSize = 20;
 
-const charSet = [
-    '^',
-    '/',
-    '\\',
-    '|',
-    '^',
-    '*',
-    'o',
-    'O',
-    '{',
-    '}',
-    '_',
-    '-',
-    '=',
-    '<',
-    '>',
-];
+const charSet = ['d', 'b', '|', '\\', '/', '.', '=', '{', '}', '*', '^', '<', '>', 'o', 'O']
 const numRows = 10;
 const wingLen = 4;
 const pSpace = 0.75;
@@ -116,10 +100,10 @@ function App() {
             >
                 <div>
                     <button onClick={handleReset}>Refresh</button>
-                    <button onClick={backInTime}>Back</button>
-                    <button onClick={forwardInTime}>Forward</button>
                     <button onClick={prevForkInTime}>prev fork</button>
                     <button onClick={nextForkInTime}>next fork</button>
+                    <button onClick={backInTime}>Back</button>
+                    <button onClick={forwardInTime}>Forward</button>
                     <button onClick={handleDownloadImage}>
                         Download as image
                     </button>

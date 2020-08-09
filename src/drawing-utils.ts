@@ -88,6 +88,18 @@ function mirrorChar(char: string): string {
             return ')';
         case ')':
             return '(';
+        case 'b':
+            return 'd';
+        case 'd':
+            return 'b';
+        // case 'M':
+        //     return 'W';
+        // case 'W':
+        //     return 'M';
+        // case 'm':
+        //     return 'w';
+        // case 'w':
+        //     return 'm';
         default:
             return char;
     }
