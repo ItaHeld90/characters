@@ -44,7 +44,7 @@ export function Drawing({ isPicked, onPick, drawingText }: DrawingProps) {
                     }}
                 >
                     <button style={{ cursor: 'pointer' }} onClick={handleCopy}>
-                        copy
+                        copy to clipboard
                     </button>
                 </div>
             </div>
